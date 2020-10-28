@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/0.1025848944/GNU_ARM/delimiter=\:
+environment/project/0.1025848944/GNU_ARM/operation=append
+environment/project/0.1025848944/GNU_ARM/value=/opt/arm/gcc-arm-none-eabi-9-2020-q2-update
+environment/project/0.1025848944/append=true
+environment/project/0.1025848944/appendContributed=true

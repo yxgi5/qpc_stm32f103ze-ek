@@ -186,6 +186,8 @@ void BSP_init(void) {
 
     /* Configure the User Button in GPIO Mode */
     BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
+    /* Configure the User Button in EXTI Mode */
+    //BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_EXTI);
 
     //...
     BSP_randomSeed(1234U);
