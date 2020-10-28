@@ -3,7 +3,10 @@
 ## current status
 
 this repo is only for gnu toolchain
+qv ok
+qk ok
+qf and ucosii ok
 
 ## to be done
 
-port qf to freertos and ucosii
+port qf to freertos
