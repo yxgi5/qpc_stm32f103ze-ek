@@ -283,35 +283,36 @@ Q_NORETURN Q_onAssert(char_t const * const module, int_t const loc) {
 
 /*..........................................................................*/
 uint8_t QS_onStartup(void const *arg) {
-    static uint8_t qsBuf[2*1024]; /* buffer for Quantum Spy */
-
+    static uint8_t qsTxBuf[2*1024]; /* buffer for QS-TX channel */
+    static uint8_t qsRxBuf[100];    /* buffer for QS-RX channel */
     (void)arg; /* avoid the "unused parameter" compiler warning */
-    QS_initBuf(qsBuf, sizeof(qsBuf));
+    QS_initBuf  (qsTxBuf, sizeof(qsTxBuf));
+    QS_rxInitBuf(qsRxBuf, sizeof(qsRxBuf));
 
   GPIO_InitTypeDef gpio_init_structure;
 
   /* Enable GPIO clock */
-  COMx_TX_GPIO_CLK_ENABLE(COM);
-  COMx_RX_GPIO_CLK_ENABLE(COM);
+  COMx_TX_GPIO_CLK_ENABLE(COM1);
+  COMx_RX_GPIO_CLK_ENABLE(COM1);
 
   /* Enable USART clock */
-  COMx_CLK_ENABLE(COM);
+  COMx_CLK_ENABLE(COM1);
 
   /* Configure USART Tx as alternate function */
-  gpio_init_structure.Pin = COM_TX_PIN[COM];
+  gpio_init_structure.Pin = COM_TX_PIN[COM1];
   gpio_init_structure.Mode = GPIO_MODE_AF_PP;
   //gpio_init_structure.Speed = GPIO_SPEED_FAST;
   gpio_init_structure.Speed      = GPIO_SPEED_FREQ_HIGH;
   gpio_init_structure.Pull = GPIO_PULLUP;
   //gpio_init_structure.Alternate = COM_TX_AF[COM];
-  HAL_GPIO_Init(COM_TX_PORT[COM], &gpio_init_structure);
+  HAL_GPIO_Init(COM_TX_PORT[COM1], &gpio_init_structure);
 
   /* Configure USART Rx as alternate function */
   gpio_init_structure.Mode = GPIO_MODE_INPUT;
-  gpio_init_structure.Pin = COM_RX_PIN[COM];
+  gpio_init_structure.Pin = COM_RX_PIN[COM1];
   //gpio_init_structure.Mode = GPIO_MODE_AF_PP;
   //gpio_init_structure.Alternate = COM_RX_AF[COM];
-  HAL_GPIO_Init(COM_RX_PORT[COM], &gpio_init_structure);
+  HAL_GPIO_Init(COM_RX_PORT[COM1], &gpio_init_structure);
 
     l_uartHandle.Instance        = USART1;
     l_uartHandle.Init.BaudRate   = 115200;
@@ -325,7 +326,8 @@ uint8_t QS_onStartup(void const *arg) {
         return 0U; /* return failure */
     }
     /* Set UART to receive 1 byte at a time via interrupt */
-    //HAL_UART_Receive_IT(&l_uartHandle, (uint8_t *)qsRxBuf, 1);
+    HAL_UART_Receive_IT(&l_uartHandle, (uint8_t *)qsRxBuf, 1);
+    /* NOTE: wait till QF::onStartup() to enable UART interrupt in NVIC */
 
     QS_tickPeriod_ = SystemCoreClock / BSP_TICKS_PER_SEC;
     QS_tickTime_ = QS_tickPeriod_; /* to start the timestamp at zero */
@@ -356,7 +358,7 @@ void QS_onFlush(void) {
         OS_EXIT_CRITICAL();
         while ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) == 0U) { /* while TXE not empty */
         }
-        l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into the DR register */
+        l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into the TDR register */
         OS_ENTER_CRITICAL();
     }
     OS_EXIT_CRITICAL();
