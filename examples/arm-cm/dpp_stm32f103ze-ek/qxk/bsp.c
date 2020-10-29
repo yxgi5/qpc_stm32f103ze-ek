@@ -124,10 +124,10 @@ void SysTick_Handler(void) {
 */
 void USART1_IRQHandler(void) {
     /* is RX register NOT empty? */
-    if ((l_uartHandle.Instance->ISR & USART_ISR_RXNE) != 0) {
-        uint32_t b = l_uartHandle.Instance->RDR;
+    if ((l_uartHandle.Instance->SR & USART_SR_RXNE) != 0) {
+        uint32_t b = l_uartHandle.Instance->DR;
         QS_RX_PUT(b);
-        l_uartHandle.Instance->ISR &= ~USART_ISR_RXNE; /* clear interrupt */
+//        l_uartHandle.Instance->ISR &= ~USART_ISR_RXNE; /* clear interrupt */
     }
 }
 /*..........................................................................*/
@@ -302,7 +302,7 @@ void QXK_onIdle(void) {
 #ifdef Q_SPY
     QS_rxParse();  /* parse all the received bytes */
 
-    if ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) != 0U) { /* TXE empty? */
+    if ((l_uartHandle.Instance->SR & UART_FLAG_TXE) != 0U) { /* TXE empty? */
         uint16_t b;
 
         QF_INT_DISABLE();
@@ -310,7 +310,7 @@ void QXK_onIdle(void) {
         QF_INT_ENABLE();
 
         if (b != QS_EOD) {  /* not End-Of-Data? */
-            l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into TDR */
+            l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into TDR */
         }
     }
 #elif defined NDEBUG
@@ -369,7 +369,7 @@ uint8_t QS_onStartup(void const *arg) {
     l_uartHandle.Init.Parity     = UART_PARITY_NONE;
     l_uartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
     l_uartHandle.Init.Mode       = UART_MODE_TX_RX;
-    l_uartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+//    l_uartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
     if (HAL_UART_Init(&l_uartHandle) != HAL_OK) {
         return 0U; /* return failure */
     }
@@ -402,9 +402,9 @@ void QS_onFlush(void) {
     while ((b = QS_getByte()) != QS_EOD) { /* while not End-Of-Data... */
         QF_INT_ENABLE();
         /* while TXE not empty */
-        while ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) == 0U) {
+        while ((l_uartHandle.Instance->SR & UART_FLAG_TXE) == 0U) {
         }
-        l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into TDR */
+        l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into TDR */
         QF_INT_DISABLE();
     }
     QF_INT_ENABLE();

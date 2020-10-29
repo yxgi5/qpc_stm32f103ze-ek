@@ -95,10 +95,10 @@ void EXTI0_IRQHandler(void) {
 void USART1_IRQHandler(void); /* prototype */
 void USART1_IRQHandler(void) {
     /* is RX register NOT empty? */
-    if ((l_uartHandle.Instance->ISR & USART_ISR_RXNE) != 0) {
-        uint32_t b = l_uartHandle.Instance->RDR;
+    if ((l_uartHandle.Instance->SR & USART_SR_RXNE) != 0) {
+        uint32_t b = l_uartHandle.Instance->DR;
         QS_RX_PUT(b);
-        l_uartHandle.Instance->ISR &= ~USART_ISR_RXNE; /* clear interrupt */
+        //l_uartHandle.Instance->ISR &= ~USART_ISR_RXNE; /* clear interrupt */
     }
 }
 #endif
@@ -136,7 +136,7 @@ void vApplicationTickHook(void) {
     buttons.previous   = current; /* update the history */
     tmp ^= buttons.depressed;     /* changed debounced depressed */
     if (tmp != 0U) {  /* debounced Key button state changed? */
-        if (buttons.depressed != 0U) { /* G8 depressed?*/
+        if (buttons.depressed == 0U) { /* G8 depressed?*/
             /* demonstrate the ISR APIs: QF_PUBLISH_FROM_ISR and Q_NEW_FROM_ISR */
             QF_PUBLISH_FROM_ISR(Q_NEW_FROM_ISR(QEvt, PAUSE_SIG),
                                 &xHigherPriorityTaskWoken,
@@ -171,13 +171,13 @@ void vApplicationIdleHook(void) {
 #ifdef Q_SPY
     QS_rxParse();  /* parse all the received bytes */
 
-    if ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) != 0U) { /* TXE empty? */
+    if ((l_uartHandle.Instance->SR & UART_FLAG_TXE) != 0U) { /* TXE empty? */
         uint16_t b;
 
         b = QS_getByte();
 
         if (b != QS_EOD) {  /* not End-Of-Data? */
-            l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into TDR */
+            l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into TDR */
         }
     }
 #elif defined NDEBUG
@@ -387,31 +387,6 @@ uint8_t QS_onStartup(void const *arg) {
 
     QS_initBuf  (qsTxBuf, sizeof(qsTxBuf));
     QS_rxInitBuf(qsRxBuf, sizeof(qsRxBuf));
-	
-  GPIO_InitTypeDef gpio_init_structure;
-
-  /* Enable GPIO clock */
-  COMx_TX_GPIO_CLK_ENABLE(COM1);
-  COMx_RX_GPIO_CLK_ENABLE(COM1);
-
-  /* Enable USART clock */
-  COMx_CLK_ENABLE(COM1);
-
-  /* Configure USART Tx as alternate function */
-  gpio_init_structure.Pin = COM_TX_PIN[COM1];
-  gpio_init_structure.Mode = GPIO_MODE_AF_PP;
-  //gpio_init_structure.Speed = GPIO_SPEED_FAST;
-  gpio_init_structure.Speed      = GPIO_SPEED_FREQ_HIGH;
-  gpio_init_structure.Pull = GPIO_PULLUP;
-  //gpio_init_structure.Alternate = COM_TX_AF[COM];
-  HAL_GPIO_Init(COM_TX_PORT[COM1], &gpio_init_structure);
-
-  /* Configure USART Rx as alternate function */
-  gpio_init_structure.Mode = GPIO_MODE_INPUT;
-  gpio_init_structure.Pin = COM_RX_PIN[COM1];
-  //gpio_init_structure.Mode = GPIO_MODE_AF_PP;
-  //gpio_init_structure.Alternate = COM_RX_AF[COM];
-  HAL_GPIO_Init(COM_RX_PORT[COM1], &gpio_init_structure);
 
     l_uartHandle.Instance        = USART1;
     l_uartHandle.Init.BaudRate   = 115200;
@@ -420,7 +395,7 @@ uint8_t QS_onStartup(void const *arg) {
     l_uartHandle.Init.Parity     = UART_PARITY_NONE;
     l_uartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
     l_uartHandle.Init.Mode       = UART_MODE_TX_RX;
-    l_uartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+//    l_uartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
     if (HAL_UART_Init(&l_uartHandle) != HAL_OK) {
         return 0U; /* return failure */
     }
@@ -452,9 +427,9 @@ void QS_onFlush(void) {
 
     while ((b = QS_getByte()) != QS_EOD) { /* while not End-Of-Data... */
         /* while TXE not empty */
-        while ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) == 0U) {
+        while ((l_uartHandle.Instance->SR & UART_FLAG_TXE) == 0U) {
         }
-        l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into TDR */
+        l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into TDR */
     }
 }
 /*..........................................................................*/

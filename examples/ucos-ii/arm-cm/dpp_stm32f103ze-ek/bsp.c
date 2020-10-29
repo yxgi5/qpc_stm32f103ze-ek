@@ -81,7 +81,7 @@ void App_TaskIdleHook(void) {
     OS_EXIT_CRITICAL();
 
 #ifdef Q_SPY
-    if ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) != 0U) {  /* is TXE empty? */
+    if ((l_uartHandle.Instance->SR & UART_FLAG_TXE) != 0U) {  /* is TXE empty? */
         uint16_t b;
 
         OS_ENTER_CRITICAL();
@@ -89,7 +89,7 @@ void App_TaskIdleHook(void) {
         OS_EXIT_CRITICAL();
 
         if (b != QS_EOD) {  /* not End-Of-Data? */
-            l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into the TDR register */
+            l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into the TDR register */
         }
     }
 #elif defined NDEBUG
@@ -136,7 +136,7 @@ void App_TimeTickHook(void) {
     buttons.previous   = current; /* update the history */
     tmp ^= buttons.depressed;     /* changed debounced depressed */
     if (tmp != 0U) {  /* debounced Key state changed? */
-        if (buttons.depressed != 0U) { /* is G8 depressed? */
+        if (buttons.depressed == 0U) { /* is G8 depressed? */
             static QEvt const pauseEvt = { PAUSE_SIG, 0U, 0U};
             QF_PUBLISH(&pauseEvt, &l_tickHook);
         }
@@ -289,31 +289,6 @@ uint8_t QS_onStartup(void const *arg) {
     QS_initBuf  (qsTxBuf, sizeof(qsTxBuf));
     QS_rxInitBuf(qsRxBuf, sizeof(qsRxBuf));
 
-  GPIO_InitTypeDef gpio_init_structure;
-
-  /* Enable GPIO clock */
-  COMx_TX_GPIO_CLK_ENABLE(COM1);
-  COMx_RX_GPIO_CLK_ENABLE(COM1);
-
-  /* Enable USART clock */
-  COMx_CLK_ENABLE(COM1);
-
-  /* Configure USART Tx as alternate function */
-  gpio_init_structure.Pin = COM_TX_PIN[COM1];
-  gpio_init_structure.Mode = GPIO_MODE_AF_PP;
-  //gpio_init_structure.Speed = GPIO_SPEED_FAST;
-  gpio_init_structure.Speed      = GPIO_SPEED_FREQ_HIGH;
-  gpio_init_structure.Pull = GPIO_PULLUP;
-  //gpio_init_structure.Alternate = COM_TX_AF[COM];
-  HAL_GPIO_Init(COM_TX_PORT[COM1], &gpio_init_structure);
-
-  /* Configure USART Rx as alternate function */
-  gpio_init_structure.Mode = GPIO_MODE_INPUT;
-  gpio_init_structure.Pin = COM_RX_PIN[COM1];
-  //gpio_init_structure.Mode = GPIO_MODE_AF_PP;
-  //gpio_init_structure.Alternate = COM_RX_AF[COM];
-  HAL_GPIO_Init(COM_RX_PORT[COM1], &gpio_init_structure);
-
     l_uartHandle.Instance        = USART1;
     l_uartHandle.Init.BaudRate   = 115200;
     l_uartHandle.Init.WordLength = UART_WORDLENGTH_8B;
@@ -321,7 +296,7 @@ uint8_t QS_onStartup(void const *arg) {
     l_uartHandle.Init.Parity     = UART_PARITY_NONE;
     l_uartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
     l_uartHandle.Init.Mode       = UART_MODE_TX_RX;
-    l_uartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+//    l_uartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
     if (HAL_UART_Init(&l_uartHandle) != HAL_OK) {
         return 0U; /* return failure */
     }
@@ -356,9 +331,9 @@ void QS_onFlush(void) {
     OS_ENTER_CRITICAL();
     while ((b = QS_getByte()) != QS_EOD) {    /* while not End-Of-Data... */
         OS_EXIT_CRITICAL();
-        while ((l_uartHandle.Instance->ISR & UART_FLAG_TXE) == 0U) { /* while TXE not empty */
+        while ((l_uartHandle.Instance->SR & UART_FLAG_TXE) == 0U) { /* while TXE not empty */
         }
-        l_uartHandle.Instance->TDR = (b & 0xFFU);  /* put into the TDR register */
+        l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into the TDR register */
         OS_ENTER_CRITICAL();
     }
     OS_EXIT_CRITICAL();

@@ -115,7 +115,7 @@ C_SRCS := \
 	stm32f1xx_hal.c \
 	stm32f1xx_hal_cortex.c \
 	stm32f1xx_hal_gpio.c \
-#	stm32f1xx_hal_pwr_ex.c \
+	stm32f1xx_hal_pwr.c \
 	stm32f1xx_hal_rcc.c \
 	stm32f1xx_hal_rcc_ex.c \
 	stm32f1xx_hal_msp.c \
