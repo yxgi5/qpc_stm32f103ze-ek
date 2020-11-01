@@ -16,7 +16,9 @@ qf and freertos ok (armfly-stm32f103ze-ek|gnu)
 qs ok (armfly-stm32f103ze-ek|gnu,mdk)(apollo-stm32f767ig|mdk)
 
 ## qspy
+
 qspy -c COM3 -b 115200
+
 qspy -c /dev/ttyUSB0 -b 115200
 ![](doc/qspy.png)
 
