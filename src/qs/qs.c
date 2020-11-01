@@ -384,6 +384,20 @@ void QS_beginRec_(uint_fast8_t rec) {
     QS_priv_.used += 2U; /* 2 bytes about to be added */
 
     QS_INSERT_ESC_BYTE_(b)
+//	chksum = (uint8_t)(chksum + (b));
+//    if (((b) != QS_FRAME) && ((b) != QS_ESC)) {
+//        //QS_INSERT_BYTE_(b)
+//				buf[head] = (b);
+//				++head;
+//				if (head == end) {
+//						head = 0U;
+//				}
+//    }
+//    else {
+//        QS_INSERT_BYTE_(QS_ESC)
+//        QS_INSERT_BYTE_((uint8_t)((b) ^ QS_ESC_XOR))
+//        ++QS_priv_.used;
+//    }
 
     chksum = (uint8_t)(chksum + rec); /* update checksum */
     QS_INSERT_BYTE_((uint8_t)rec) /* rec byte does not need escaping */

@@ -398,10 +398,12 @@ void QS_onFlush(void) {
     QF_INT_DISABLE();
     while ((b = QS_getByte()) != QS_EOD) { /* while not End-Of-Data... */
         QF_INT_ENABLE();
+		//uint8_t tmp = (b & 0xFFU);
         /* while TXE not empty */
         while ((l_uartHandle.Instance->SR & UART_FLAG_TXE) == 0U) {
         }
         l_uartHandle.Instance->DR = (b & 0xFFU);  /* put into TDR */
+        //HAL_UART_Transmit(l_uartHandle.Instance, &tmp, 1, 0);
         QF_INT_DISABLE();
     }
     QF_INT_ENABLE();

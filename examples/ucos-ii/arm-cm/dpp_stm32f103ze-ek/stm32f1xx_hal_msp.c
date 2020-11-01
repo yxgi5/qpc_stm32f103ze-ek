@@ -127,6 +127,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 
     /* UART RX GPIO pin configuration  */
     GPIO_InitStruct.Pin       = USARTx_RX_PIN;
+    GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
 //    GPIO_InitStruct.Alternate = USARTx_RX_AF;
     HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
 

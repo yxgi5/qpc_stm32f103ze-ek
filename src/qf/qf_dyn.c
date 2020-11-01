@@ -124,14 +124,14 @@ void QF_poolInit(void * const poolSto, uint_fast32_t const poolSize,
     QF_EPOOL_INIT_(QF_pool_[QF_maxPool_], poolSto, poolSize, evtSize);
     ++QF_maxPool_; /* one more pool */
 
-#ifdef Q_SPY
-    /* generate the object-dictionary entry for the initialized pool */
-    {
-        char_t obj_name[9] = "EvtPool?";
-        obj_name[7] = '0' + (QF_maxPool_ & 0x7FU);
-        QS_obj_dict_pre_(&QF_pool_[QF_maxPool_ - 1U], obj_name);
-    }
-#endif /* Q_SPY*/
+//#ifdef Q_SPY
+//    /* generate the object-dictionary entry for the initialized pool */
+//    {
+//        char_t obj_name[9] = "EvtPool?";
+//        obj_name[7] = '0' + (QF_maxPool_ & 0x7FU);
+//        QS_obj_dict_pre_(&QF_pool_[QF_maxPool_ - 1U], obj_name);
+//    }
+//#endif /* Q_SPY*/
 }
 
 /****************************************************************************/
